@@ -1,0 +1,325 @@
+import pywifi
+import time
+import pandas as pd
+import csv
+import os
+import pickle
+from collections import defaultdict
+
+from rssi_raim import rssi_to_distance, raim_consistency_check, is_temporally_unstable
+
+# ================= LOAD MODELS (tiered, graceful fallback) =================
+# ml_mode:
+#   "hybrid" -> RF + KNN + Isolation Forest, combined by a Logistic Regression
+#               meta-classifier (best; needs all 6 .pkl files from the new
+#               train_model.py)
+#   "basic"  -> RF + KNN only, simple voting (old behavior; used if you're
+#               still on the old model files without iso/meta)
+#   "none"   -> rule-based scoring only (no .pkl files found at all)
+ml_mode = "none"
+
+try:
+    with open("rf_model.pkl", "rb") as f:
+        rf_model = pickle.load(f)
+    with open("knn_model.pkl", "rb") as f:
+        knn_model = pickle.load(f)
+    with open("le_security.pkl", "rb") as f:
+        le_security = pickle.load(f)
+    with open("le_label.pkl", "rb") as f:
+        le_label = pickle.load(f)
+
+    ml_mode = "basic"
+    fake_idx = list(le_label.classes_).index("Fake")
+
+    try:
+        with open("iso_model.pkl", "rb") as f:
+            iso_model = pickle.load(f)
+        with open("meta_model.pkl", "rb") as f:
+            meta_model = pickle.load(f)
+        ml_mode = "hybrid"
+    except Exception:
+        pass  # stay in "basic" mode
+
+except Exception:
+    print("⚠️ ML models not found. Running rule-based only.")
+
+print(f"🧠 ML mode: {ml_mode}")
+
+DATASET_FILE = "wifi_dataset.csv"
+CURRENT_SCAN_FILE = "current_scan.csv"
+
+wifi = pywifi.PyWiFi()
+iface = wifi.interfaces()[0]
+
+signal_history = defaultdict(list)
+network_map = defaultdict(list)
+bssid_signal_history = defaultdict(list)  # (ssid, bssid) -> [rssi per scan pass]
+
+print("📡 Scanning WiFi...\n")
+
+# ================= COLLECT DATA =================
+for _ in range(5):
+    iface.scan()
+    time.sleep(2)
+    results = iface.scan_results()
+
+    for net in results:
+        if not net.ssid:
+            continue
+        signal_history[net.ssid].append(net.signal)
+        network_map[net.ssid].append(net)
+        bssid_signal_history[(net.ssid, net.bssid)].append(net.signal)
+
+print("📊 Smart WiFi Analysis:\n")
+
+# ================= LOAD EXISTING DATASET ENTRIES =================
+existing_entries = set()
+
+if os.path.exists(DATASET_FILE):
+    with open(DATASET_FILE, "r", newline="", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        next(reader, None)
+        for row in reader:
+            if len(row) >= 2:
+                existing_entries.add((row[0], row[1]))  # SSID + BSSID
+
+# ================= CREATE FILES IF NEEDED =================
+if not os.path.exists(DATASET_FILE):
+    with open(DATASET_FILE, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            "SSID", "BSSID", "RSSI", "Channel",
+            "Security", "AP_Count", "Signal_Var", "Label"
+        ])
+
+with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
+    scan_writer = csv.writer(scan_f)
+    scan_writer.writerow([
+        "SSID", "BSSID", "Signal", "Channel", "Security",
+        "Status", "Risk_Score", "AP_Count", "Signal_Fluctuation",
+        "Signal_History", "Random_Forest", "KNN", "Isolation_Forest",
+        "Meta_Model", "Meta_Confidence", "Est_Distance_m", "RAIM_Flagged",
+        "Temporally_Unstable", "Reason"
+    ])
+
+    with open(DATASET_FILE, "a", newline="", encoding="utf-8") as data_f:
+        data_writer = csv.writer(data_f)
+
+        for ssid, signals in signal_history.items():
+            networks = network_map[ssid]
+
+            # keep unique BSSID only
+            unique_networks = {}
+            for net in networks:
+                unique_networks[net.bssid] = net
+
+            if not unique_networks:
+                continue
+
+            unique_net_values = list(unique_networks.values())
+            bssids = list(unique_networks.keys())
+
+            ap_count = len(bssids)
+            signal_var = max(signals) - min(signals) if len(signals) > 1 else 0
+            avg_signal = sum(signals) // len(signals)
+
+            channel = unique_net_values[0].freq
+            security = "Open" if not unique_net_values[0].akm else "WPA2"
+
+            # ================= PAPER 3: RAIM-style multi-AP consistency check =================
+            # Needs all BSSIDs broadcasting this SSID together (that's the
+            # "redundant AP measurements" the RAIM cross-validation needs).
+            per_bssid_histories = {
+                b: bssid_signal_history[(ssid, b)] for b in bssids
+            }
+            raim_results = raim_consistency_check(per_bssid_histories)
+
+            for bssid, net in unique_networks.items():
+                key = (ssid, bssid)
+
+                # ================= RULE-BASED RISK LOGIC =================
+                # (Always runs, regardless of ML mode, so the tool still
+                # works with zero training data.)
+                risk = 5
+                reasons = []
+
+                # AP count 1 or 2 is normal for home dual-band WiFi
+                if ap_count > 2:
+                    risk += 15
+                    reasons.append("Multiple AP detected")
+
+                if ap_count > 2 and signal_var > 10:
+                    risk += 15
+                    reasons.append("Unstable multi-AP behavior")
+
+                if signal_var > 15:
+                    risk += 15
+                    reasons.append("High signal fluctuation")
+
+                if security == "Open":
+                    risk += 20
+                    reasons.append("Open network")
+
+                # ---- PAPER 2: path-loss-model distance estimate replaces the
+                # old fixed "-35 dBm = suspicious" rule with a physically
+                # grounded one (an AP genuinely can't be legitimately mounted
+                # inside ~1m of the client in almost any real deployment) ----
+                bssid_history = bssid_signal_history[(ssid, bssid)]
+                est_distance = round(rssi_to_distance(avg_signal), 2)
+                if est_distance < 1.0:
+                    risk += 15
+                    reasons.append(f"Physically implausible proximity (~{est_distance}m by path-loss model)")
+
+                # ---- PAPER 1: temporal RSSI stability check ----
+                unstable = is_temporally_unstable(bssid_history)
+                if unstable:
+                    risk += 15
+                    reasons.append("Unstable/erratic RSSI across repeated scans")
+
+                # ---- PAPER 3: RAIM-style multi-AP distance-consistency check ----
+                raim_info = raim_results.get(bssid, {})
+                raim_flagged = raim_info.get("flagged", False)
+                if raim_flagged:
+                    risk += 20
+                    reasons.append(
+                        f"RAIM check: distance estimate (~{raim_info.get('distance')}m) inconsistent "
+                        f"with other APs broadcasting '{ssid}' "
+                        f"({raim_info.get('rogue_votes')}/{raim_info.get('rogue_votes', 0) + raim_info.get('benign_votes', 0)} subsets disagree)"
+                    )
+
+                rf_result = "N/A"
+                knn_result = "N/A"
+                iso_result = "N/A"
+                meta_result = "N/A"
+                meta_conf = "N/A"
+
+                # ================= ML LAYER =================
+                if ml_mode in ("basic", "hybrid"):
+                    try:
+                        if security in le_security.classes_:
+                            sec_encoded = le_security.transform([security])[0]
+                        else:
+                            sec_encoded = 0
+
+                        sample = pd.DataFrame([{
+                            "RSSI": avg_signal,
+                            "Channel": channel,
+                            "Security_enc": sec_encoded,
+                            "AP_Count": ap_count,
+                            "Signal_Var": signal_var
+                        }])
+
+                        rf_proba = rf_model.predict_proba(sample)[0][fake_idx]
+                        knn_proba = knn_model.predict_proba(sample)[0][fake_idx]
+                        rf_result = "Fake" if rf_proba > 0.5 else "Legit"
+                        knn_result = "Fake" if knn_proba > 0.5 else "Legit"
+
+                        if ml_mode == "hybrid":
+                            # Isolation Forest: -1 = anomaly, 1 = normal
+                            iso_pred = iso_model.predict(sample)[0]
+                            iso_score = -iso_model.decision_function(sample)[0]
+                            iso_result = "Anomaly" if iso_pred == -1 else "Normal"
+
+                            meta_features = [[rf_proba, knn_proba, iso_score]]
+                            meta_pred_num = meta_model.predict(meta_features)[0]
+                            meta_proba = meta_model.predict_proba(meta_features)[0][fake_idx]
+
+                            meta_result = le_label.inverse_transform([meta_pred_num])[0]
+                            meta_conf = round(float(meta_proba if meta_result == "Fake" else 1 - meta_proba) * 100, 1)
+
+                            # Meta-classifier is the primary ML verdict now
+                            if meta_result == "Fake":
+                                risk += 20 + round(meta_proba * 10)  # 20-30 pts, scaled by confidence
+                                reasons.append(f"Hybrid model flagged anomaly ({meta_conf}% confidence)")
+                            else:
+                                reasons.append(f"Hybrid model: no anomaly ({meta_conf}% confidence)")
+
+                            # Keep individual base-model signals for transparency
+                            if rf_result == "Fake":
+                                reasons.append("Random Forest flagged anomaly")
+                            if knn_result == "Fake":
+                                reasons.append("KNN flagged anomaly")
+                            if iso_result == "Anomaly":
+                                reasons.append("Isolation Forest: deviates from known legitimate APs")
+
+                        else:
+                            # old-style simple RF+KNN voting (backward compatible)
+                            if rf_result == "Fake" and knn_result == "Fake":
+                                risk += 25
+                                reasons.append("RF + KNN both detected anomaly")
+                            elif rf_result == "Fake" or knn_result == "Fake":
+                                risk += 15
+                                reasons.append("One ML model detected anomaly")
+
+                    except Exception as e:
+                        reasons.append(f"ML error: {str(e)}")
+
+                if risk > 100:
+                    risk = 100
+
+                label = "Fake" if risk >= 50 else "Legit"
+                status = "⚠️ Suspicious" if label == "Fake" else "✅ Safe"
+                reason_text = ", ".join(reasons) if reasons else "No major anomaly"
+
+                # ================= CONSOLE OUTPUT =================
+                print(f"SSID: {ssid}")
+                print(f"BSSID: {bssid}")
+                print(f"Signal: {avg_signal} dBm")
+                print(f"Channel: {channel}")
+                print(f"Security: {security}")
+                print(f"Status: {status}")
+                print(f"Risk Score: {risk}%")
+                print(f"AP Count: {ap_count}")
+                print(f"Signal Fluctuation: {signal_var} dBm")
+                print(f"Signal History: {signals}")
+                print(f"Random Forest: {rf_result}")
+                print(f"KNN: {knn_result}")
+                print(f"Isolation Forest: {iso_result}")
+                print(f"Meta Model: {meta_result} (confidence {meta_conf}%)")
+                print(f"Est. Distance (path-loss model): {est_distance} m")
+                print(f"RAIM Flagged: {raim_flagged}")
+                print(f"Temporally Unstable: {unstable}")
+                print(f"Reason: {reason_text}")
+
+                if key in existing_entries:
+                    print("📁 Already in dataset")
+                else:
+                    data_writer.writerow([
+                        ssid,
+                        bssid,
+                        avg_signal,
+                        channel,
+                        security,
+                        ap_count,
+                        signal_var,
+                        label
+                    ])
+                    existing_entries.add(key)
+                    print("💾 New network saved")
+
+                print("-" * 50)
+
+                # ================= SAVE CURRENT SCAN =================
+                scan_writer.writerow([
+                    ssid,
+                    bssid,
+                    avg_signal,
+                    channel,
+                    security,
+                    status,
+                    risk,
+                    ap_count,
+                    signal_var,
+                    str(signals),
+                    rf_result,
+                    knn_result,
+                    iso_result,
+                    meta_result,
+                    meta_conf,
+                    est_distance,
+                    raim_flagged,
+                    unstable,
+                    reason_text
+                ])
+
+print("\n✅ Process Completed!")

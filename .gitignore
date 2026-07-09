@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+code_risk.db
+code_risk_report.json
+*.bak

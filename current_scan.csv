@@ -1,0 +1,19 @@
+SSID,BSSID,Signal,Channel,Security,Status,Risk_Score,AP_Count,Signal_Fluctuation,Signal_History,Random_Forest,KNN,Isolation_Forest,Meta_Model,Meta_Confidence,Est_Distance_m,RAIM_Flagged,Temporally_Unstable,XAI_JSON,Reason
+FTTH,4c:ae:1c:4b:7a:83:,-62,2412000,WPA2,✅ Safe,5,1,8,"[-64, -64, -66, -66, -58, -58, -58, -58, -62, -62]",N/A,N/A,N/A,N/A,N/A,5.41,False,False,"{""rules"": [], ""meta"": [], ""rf_features"": [[""RSSI Signal Spike / Attenuation"", -62.0], [""Channel Congestion Overlap"", 25.0], [""Unencrypted Open Portal Flag"", -20.0], [""Multi-AP MAC Spoofing Density"", 0], [""Temporal Signal Fluctuation Variance"", 32]]}","ML error: The feature names should match those that were passed during fit.
+Feature names unseen at fit time:
+- Security_enc
+Feature names seen at fit time, yet now missing:
+- Security
+"
+Raj,4c:ae:1c:4b:7a:7f:,-67,5180000,WPA2,✅ Safe,5,1,1,"[-66, -66, -67, -67, -66, -66, -66, -66, -67, -67]",N/A,N/A,N/A,N/A,N/A,7.94,False,False,"{""rules"": [], ""meta"": [], ""rf_features"": [[""RSSI Signal Spike / Attenuation"", -67.0], [""Channel Congestion Overlap"", 25.0], [""Unencrypted Open Portal Flag"", -20.0], [""Multi-AP MAC Spoofing Density"", 0], [""Temporal Signal Fluctuation Variance"", 4]]}","ML error: The feature names should match those that were passed during fit.
+Feature names unseen at fit time:
+- Security_enc
+Feature names seen at fit time, yet now missing:
+- Security
+"
+Raj ,92:e5:50:0b:53:b3:,-44,5745000,WPA2,✅ Safe,5,1,0,"[-44, -44, -44, -44, -44, -44, -44, -44, -44, -44]",N/A,N/A,N/A,N/A,N/A,1.36,False,False,"{""rules"": [], ""meta"": [], ""rf_features"": [[""RSSI Signal Spike / Attenuation"", -44.0], [""Channel Congestion Overlap"", 25.0], [""Unencrypted Open Portal Flag"", -20.0], [""Multi-AP MAC Spoofing Density"", 0], [""Temporal Signal Fluctuation Variance"", 0]]}","ML error: The feature names should match those that were passed during fit.
+Feature names unseen at fit time:
+- Security_enc
+Feature names seen at fit time, yet now missing:
+- Security
+"

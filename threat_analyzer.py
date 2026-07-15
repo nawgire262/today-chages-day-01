@@ -16,6 +16,14 @@ import numpy as np
 from collections import defaultdict
 from datetime import datetime, timedelta
 
+<<<<<<< HEAD
+=======
+try:
+    from threat_intelligence import get_threat_intelligence
+except ImportError:
+    get_threat_intelligence = None
+
+>>>>>>> 0d1f8da (Updated SentinelShield project)
 
 class AdvancedThreatAnalyzer:
     """Multi-vector threat scoring engine"""
@@ -24,6 +32,10 @@ class AdvancedThreatAnalyzer:
         self.threat_history = defaultdict(list)
         self.mac_vendor_db = self._load_mac_vendors()
         self.legitimate_ssids = set()
+<<<<<<< HEAD
+=======
+        self.cloud_intelligence = get_threat_intelligence() if get_threat_intelligence else None
+>>>>>>> 0d1f8da (Updated SentinelShield project)
         
     def _load_mac_vendors(self):
         """Load known MAC vendor prefixes"""
@@ -290,6 +302,30 @@ class AdvancedThreatAnalyzer:
         total_score += score
         all_reasons.extend(reasons)
         vectors['vendor'] = {'score': score}
+<<<<<<< HEAD
+=======
+
+        # Vector 7: Collaborative cloud reputation.  This is intentionally
+        # evaluated before final scoring and remains a no-op in offline mode.
+        cloud = self.cloud_intelligence.lookup(network_data.get('bssid', '')) if self.cloud_intelligence else {
+            'hit': False, 'risk_score': 0.0, 'threat_type': None
+        }
+        cloud_penalty = 0.0
+        if cloud['hit']:
+            # A confirmed BSSID is a strong independent signal, but cap the
+            # boost so local observations still contribute to classification.
+            cloud_penalty = min(35.0, 15.0 + float(cloud['risk_score']) * 0.20)
+            total_score += cloud_penalty
+            all_reasons.append(
+                f"Cloud reputation hit: {cloud['threat_type']} (cloud risk {cloud['risk_score']:.0f}%)"
+            )
+        vectors['cloud_intelligence'] = {
+            'score': cloud_penalty,
+            'hit': cloud['hit'],
+            'cloud_risk_score': cloud['risk_score'],
+            'threat_type': cloud['threat_type'],
+        }
+>>>>>>> 0d1f8da (Updated SentinelShield project)
         
         # Clamp score to 0-100
         total_score = max(0, min(100, total_score))
@@ -312,7 +348,12 @@ class AdvancedThreatAnalyzer:
             'threat_level': threat_level,
             'vectors': vectors,
             'reasons': all_reasons,
+<<<<<<< HEAD
             'recommendations': recommendations
+=======
+            'recommendations': recommendations,
+            'cloud_hit': cloud['hit'],
+>>>>>>> 0d1f8da (Updated SentinelShield project)
         }
     
     def _generate_recommendations(self, threat_level, reasons):

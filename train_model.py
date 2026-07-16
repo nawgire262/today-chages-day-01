@@ -37,6 +37,7 @@ Outputs (all saved next to this script):
 
 import os
 import pickle
+import sys
 
 import numpy as np
 import pandas as pd
@@ -46,6 +47,10 @@ from sklearn.metrics import accuracy_score, classification_report
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
+
+# Windows terminals may default to cp1252; retain readable training output.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 # ================= CONFIG =================
 DATASET_FILE = "wifi_dataset.csv"  # relative path (was hardcoded D:\ before)

@@ -1,5 +1,26 @@
 [
   {
+    "SSID": "OfficeWiFi",
+    "BSSID": "00:11:22:33:44:55",
+    "Channel": 2412,
+    "Signal": 0,
+    "Security": "WPA2"
+  },
+  {
+    "SSID": "OfficeWiFi",
+    "BSSID": "AA:BB:CC:11:22:33",
+    "Channel": 2412,
+    "Signal": 0,
+    "Security": "OPEN"
+  },
+  {
+    "SSID": "GuestWiFi",
+    "BSSID": "66:77:88:99:AA:BB",
+    "Channel": 5180,
+    "Signal": 0,
+    "Security": "WPA2"
+  },
+  {
     "SSID": "ro3",
     "BSSID": "76:F0:FA:35:04:4A:",
     "Channel": 5180000,

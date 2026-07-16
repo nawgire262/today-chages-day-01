@@ -16,14 +16,11 @@ import numpy as np
 from collections import defaultdict
 from datetime import datetime, timedelta
 
-<<<<<<< HEAD
-=======
 try:
     from threat_intelligence import get_threat_intelligence
 except ImportError:
     get_threat_intelligence = None
 
->>>>>>> 0d1f8da (Updated SentinelShield project)
 
 class AdvancedThreatAnalyzer:
     """Multi-vector threat scoring engine"""
@@ -32,10 +29,7 @@ class AdvancedThreatAnalyzer:
         self.threat_history = defaultdict(list)
         self.mac_vendor_db = self._load_mac_vendors()
         self.legitimate_ssids = set()
-<<<<<<< HEAD
-=======
         self.cloud_intelligence = get_threat_intelligence() if get_threat_intelligence else None
->>>>>>> 0d1f8da (Updated SentinelShield project)
         
     def _load_mac_vendors(self):
         """Load known MAC vendor prefixes"""
@@ -302,8 +296,6 @@ class AdvancedThreatAnalyzer:
         total_score += score
         all_reasons.extend(reasons)
         vectors['vendor'] = {'score': score}
-<<<<<<< HEAD
-=======
 
         # Vector 7: Collaborative cloud reputation.  This is intentionally
         # evaluated before final scoring and remains a no-op in offline mode.
@@ -325,7 +317,6 @@ class AdvancedThreatAnalyzer:
             'cloud_risk_score': cloud['risk_score'],
             'threat_type': cloud['threat_type'],
         }
->>>>>>> 0d1f8da (Updated SentinelShield project)
         
         # Clamp score to 0-100
         total_score = max(0, min(100, total_score))
@@ -348,12 +339,8 @@ class AdvancedThreatAnalyzer:
             'threat_level': threat_level,
             'vectors': vectors,
             'reasons': all_reasons,
-<<<<<<< HEAD
-            'recommendations': recommendations
-=======
             'recommendations': recommendations,
             'cloud_hit': cloud['hit'],
->>>>>>> 0d1f8da (Updated SentinelShield project)
         }
     
     def _generate_recommendations(self, threat_level, reasons):

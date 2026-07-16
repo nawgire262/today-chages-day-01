@@ -216,8 +216,10 @@ class HybridEnsembleDetector:
                 features_dict.get('Signal_Var', 0)
             ]])
             
-            # Scale if scaler available
-            if self.scaler:
+            # Only transform with a fitted scaler.  A fresh StandardScaler has
+            # no learned statistics and previously caused every prediction/XAI
+            # explanation to fail silently.
+            if self.scaler is not None and hasattr(self.scaler, "mean_"):
                 X_scaled = self.scaler.transform(X)
             else:
                 X_scaled = X
@@ -280,6 +282,27 @@ class HybridEnsembleDetector:
                     meta_conf = 50
                     ml_risk_addition = 0
             
+            # Prediction-specific feature contribution.  We combine the RF's
+            # learned feature importance with this network's normalized model
+            # input; raw channel frequency is never plotted directly.
+            feature_names = ["RSSI", "Channel", "Security_enc", "AP_Count", "Signal_Var"]
+            learned = np.asarray(getattr(self.rf_model, "feature_importances_", np.ones(len(feature_names))), dtype=float)
+            # Use unitless feature magnitudes for explanation display.  Wi-Fi
+            # frequencies are measured in Hz while RSSI is in dBm; multiplying
+            # raw values made Channel appear in the millions and invalidated
+            # the chart.  The prediction itself still receives its trained
+            # input vector above.
+            display_scales = np.array([100.0, 6_000_000.0, max(1, len(self.le_security.classes_) - 1), 20.0, 100.0])
+            magnitude = np.clip(np.abs(np.asarray(X, dtype=float).reshape(-1)) / display_scales, 0.0, 1.0)
+            raw_contributions = np.nan_to_num(learned * magnitude, nan=0.0, posinf=0.0, neginf=0.0)
+            if raw_contributions.sum() <= 0:
+                raw_contributions = np.nan_to_num(learned, nan=0.0, posinf=0.0, neginf=0.0)
+            total = raw_contributions.sum()
+            contributions = {
+                name: round(float(value / total * 100), 2)
+                for name, value in zip(feature_names, raw_contributions)
+            } if total > 0 else {}
+
             return {
                 'rf_prediction': rf_pred,
                 'knn_prediction': knn_pred,
@@ -287,7 +310,8 @@ class HybridEnsembleDetector:
                 'iso_prediction': iso_result,
                 'meta_prediction': meta_result,
                 'meta_confidence': round(meta_conf, 1),
-                'ensemble_risk': min(100, ml_risk_addition)
+                'ensemble_risk': min(100, ml_risk_addition),
+                'feature_contributions': contributions,
             }
         
         except Exception as e:

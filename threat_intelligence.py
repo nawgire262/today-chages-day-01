@@ -7,6 +7,7 @@ file, all methods return safe local values and the scanner continues normally.
 from __future__ import annotations
 
 import os
+import json
 import threading
 import time
 from datetime import datetime, timezone
@@ -42,6 +43,30 @@ class CloudThreatIntelligence:
         self._last_error: Optional[str] = None
         self._reputation_hits = 0
         self._lock = threading.RLock()
+        self.cache_path = Path(os.getenv("THREAT_INTEL_CACHE", "threat_intelligence_cache.json"))
+        self._external_cache = self._load_external_cache()
+
+    def _load_external_cache(self) -> Dict[str, Any]:
+        try:
+            payload = json.loads(self.cache_path.read_text(encoding="utf-8"))
+            return payload if isinstance(payload, dict) else {}
+        except (OSError, json.JSONDecodeError):
+            return {}
+
+    def cache_external_result(self, bssid: str, provider: str, result: Dict[str, Any]) -> None:
+        """Persist normalized results supplied by VirusTotal, AbuseIPDB, or OpenPhish adapters.
+
+        Network calls are intentionally kept outside the scanner; deployments can
+        call this method from their credentialed provider adapter without making
+        a Wi-Fi scan depend on a third-party API.
+        """
+        mac = self.normalize_bssid(bssid)
+        if not mac or provider not in {"VirusTotal", "AbuseIPDB", "OpenPhish"}:
+            return
+        with self._lock:
+            item = self._external_cache.setdefault(mac, {})
+            item[provider] = {"checked_at": datetime.now(timezone.utc).isoformat(), **result}
+            self.cache_path.write_text(json.dumps(self._external_cache, indent=2), encoding="utf-8")
 
     @staticmethod
     def normalize_bssid(bssid: str) -> str:
@@ -113,6 +138,10 @@ class CloudThreatIntelligence:
                     "threat_type": entry.get("threat_type", "Unknown"),
                     "detection_time": entry.get("detection_time"),
                 }
+            external = self._external_cache.get(mac, {})
+            if external:
+                scores = [float(value.get("risk_score", 0)) for value in external.values() if isinstance(value, dict)]
+                return {"hit": bool(max(scores, default=0)), "risk_score": max(scores, default=0), "threat_type": "External provider reputation", "detection_time": None}
         return {"hit": False, "risk_score": 0.0, "threat_type": None, "detection_time": None}
 
     def upload_rogue_ap(self, ssid: str, bssid: str, risk_score: float, threat_type: str, node_id: str = "NODE_OM007") -> bool:
@@ -155,6 +184,12 @@ class CloudThreatIntelligence:
                 "last_error": self._last_error,
                 "sync_interval_seconds": self.sync_interval_seconds,
                 "shared_threat_feed": self.shared_feed(),
+                "external_provider_adapters": {
+                    "VirusTotal": bool(os.getenv("VIRUSTOTAL_API_KEY")),
+                    "AbuseIPDB": bool(os.getenv("ABUSEIPDB_API_KEY")),
+                    "OpenPhish": bool(os.getenv("OPENPHISH_API_KEY")),
+                },
+                "local_external_cache_entries": len(self._external_cache),
             }
 
 

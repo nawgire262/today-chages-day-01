@@ -1,0 +1,6 @@
+{
+  "random_forest": 0.35,
+  "knn": 0.25,
+  "isolation_forest": 0.25,
+  "rule_score": 0.15
+}

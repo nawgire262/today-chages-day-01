@@ -1,0 +1,3 @@
+SSID,Reason,Risk_Score,Last_Seen
+Free Airport WiFi,Impersonation-style name,70,2026-07-16
+Secure Bank Login,Credential phishing keyword,85,2026-07-16

@@ -1,0 +1,8 @@
+# Cached OpenPhish keywords/indicators. Updated only when network access is configured.
+login
+verify
+secure
+bank
+free
+wifi
+hotspot

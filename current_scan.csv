@@ -1,0 +1,2 @@
+SSID,BSSID,RSSI,Channel,Security,AP_Count,Signal_Var,Threat_Score,Combined_Risk,Threat_Level
+ro3,76:f0:fa:35:04:4a:,-31.0,5180000,WPA2,1,4.0,33.0,13.8,SAFE

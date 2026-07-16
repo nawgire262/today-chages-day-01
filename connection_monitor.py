@@ -1,6 +1,4 @@
 <<<<<<< HEAD
-=======
-<<<<<<< HEAD
 import subprocess
 
 
@@ -37,7 +35,6 @@ def get_connected_wifi():
 
     except Exception:
 =======
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 import subprocess
 
 
@@ -73,8 +70,5 @@ def get_connected_wifi():
         return None
 
     except Exception:
-<<<<<<< HEAD
-=======
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
         return None

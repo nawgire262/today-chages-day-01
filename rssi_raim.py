@@ -1,8 +1,6 @@
 """
 rssi_raim.py
 <<<<<<< HEAD
-=======
-<<<<<<< HEAD
 =============
 "AP Distance-Consistency Engine" — integrates the core logic of three
 research papers into one feature for SentinelShield.
@@ -244,7 +242,6 @@ def raim_consistency_check(bssid_rssi_histories, n_sigma=3.0, max_subsets_per_bs
 
     return results
 =======
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 
 RAIM-inspired WiFi signal validation utilities
 for SentinelShield.
@@ -466,7 +463,4 @@ if __name__ == "__main__":
     }
 
     print(raim_consistency_check(sample))
-<<<<<<< HEAD
-=======
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4

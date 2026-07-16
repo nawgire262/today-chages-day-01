@@ -1,15 +1,10 @@
 from notification_manager import NotificationManager
 from alert_logger import AlertLogger
 <<<<<<< HEAD
-from fingerprinting.fingerprint_generator import create_fingerprint
-from fingerprinting.fingerprint_matcher import compare_fingerprint
-=======
-<<<<<<< HEAD
 =======
 from fingerprinting.fingerprint_generator import create_fingerprint
 from fingerprinting.fingerprint_matcher import compare_fingerprint
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 import pywifi
 import time
 import pandas as pd
@@ -23,8 +18,6 @@ from rssi_raim import rssi_to_distance, raim_consistency_check, is_temporally_un
 
 # ================= LOAD MODELS (tiered, graceful fallback) =================
 <<<<<<< HEAD
-=======
-<<<<<<< HEAD
 # ml_mode:
 #   "hybrid" -> RF + KNN + Isolation Forest, combined by a Logistic Regression
 #               meta-classifier (best; needs all 6 .pkl files from the new
@@ -34,7 +27,6 @@ from rssi_raim import rssi_to_distance, raim_consistency_check, is_temporally_un
 #   "none"   -> rule-based scoring only (no .pkl files found at all)
 =======
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 ml_mode = "none"
 
 try:
@@ -93,20 +85,14 @@ for _ in range(5):
 
 print("📊 Smart WiFi Analysis:\n")
 <<<<<<< HEAD
-
-=======
-<<<<<<< HEAD
 =======
 
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 # ---------------------------------------
 # Detect Currently Connected WiFi
 # ---------------------------------------
 connected_ssid = None
 <<<<<<< HEAD
-=======
-<<<<<<< HEAD
 
 try:
     profile = iface.network_profiles()
@@ -116,28 +102,21 @@ try:
         print(f"📶 Connected WiFi : {connected_ssid}")
 
 =======
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 try:
     profile = iface.network_profiles()
     if profile:
         connected_ssid = profile[0].ssid
         print(f"📶 Connected WiFi : {connected_ssid}")
-<<<<<<< HEAD
-=======
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 except Exception:
     connected_ssid = None
 
 # ================= LOAD EXISTING DATASET ENTRIES =================
 existing_entries = set()
 <<<<<<< HEAD
-=======
-<<<<<<< HEAD
 
 =======
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 if os.path.exists(DATASET_FILE):
     with open(DATASET_FILE, "r", newline="", encoding="utf-8") as f:
         reader = csv.reader(f)
@@ -163,14 +142,10 @@ with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
         "Signal_History", "Random_Forest", "KNN", "Isolation_Forest",
         "Meta_Model", "Meta_Confidence", "Est_Distance_m", "RAIM_Flagged",
 <<<<<<< HEAD
-        "Temporally_Unstable", "XAI_JSON", "Fingerprint_Similarity", "Reason"
-=======
-<<<<<<< HEAD
         "Temporally_Unstable", "XAI_JSON", "Reason"
 =======
         "Temporally_Unstable", "XAI_JSON", "Fingerprint_Similarity", "Reason"
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
     ])
 
     with open(DATASET_FILE, "a", newline="", encoding="utf-8") as data_f:
@@ -199,13 +174,10 @@ with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
 
             # ================= PAPER 3: RAIM-style multi-AP consistency check =================
 <<<<<<< HEAD
-=======
-<<<<<<< HEAD
             # Needs all BSSIDs broadcasting this SSID together (that's the
             # "redundant AP measurements" the RAIM cross-validation needs).
 =======
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
             per_bssid_histories = {
                 b: bssid_signal_history[(ssid, b)] for b in bssids
             }
@@ -216,23 +188,17 @@ with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
 
                 # ================= RULE-BASED RISK LOGIC =================
 <<<<<<< HEAD
-=======
-<<<<<<< HEAD
                 # (Always runs, regardless of ML mode, so the tool still
                 # works with zero training data.)
 =======
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
                 risk = 5
                 reasons = []
                 rule_contributions = []
 
 <<<<<<< HEAD
-=======
-<<<<<<< HEAD
                 # AP count 1 or 2 is normal for home dual-band WiFi
 =======
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
                 # ================= SIGNAL FINGERPRINTING =================
                 current_network = {
                     "SSID": ssid,
@@ -255,10 +221,7 @@ with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
                     reasons.append(f"Fingerprint partially matched ({similarity}% similarity)")
 
                 # AP count metrics
-<<<<<<< HEAD
-=======
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
                 if ap_count > 2:
                     risk += 15
                     reasons.append("Multiple AP detected")
@@ -280,9 +243,6 @@ with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
                     rule_contributions.append({"factor": "Open network", "points": 20})
 
 <<<<<<< HEAD
-                # ---- PAPER 2: path-loss-model distance estimate ----
-=======
-<<<<<<< HEAD
                 # ---- PAPER 2: path-loss-model distance estimate replaces the
                 # old fixed "-35 dBm = suspicious" rule with a physically
                 # grounded one (an AP genuinely can't be legitimately mounted
@@ -290,7 +250,6 @@ with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
 =======
                 # ---- PAPER 2: path-loss-model distance estimate ----
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
                 bssid_history = bssid_signal_history[(ssid, bssid)]
                 est_distance = round(rssi_to_distance(avg_signal), 2)
                 if est_distance < 1.0:
@@ -349,12 +308,9 @@ with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
 
                         if ml_mode == "hybrid":
 <<<<<<< HEAD
-=======
-<<<<<<< HEAD
                             # Isolation Forest: -1 = anomaly, 1 = normal
 =======
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
                             iso_pred = iso_model.predict(sample)[0]
                             iso_score = -iso_model.decision_function(sample)[0]
                             iso_result = "Anomaly" if iso_pred == -1 else "Normal"
@@ -368,10 +324,6 @@ with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
                             meta_conf = round(float(meta_proba if meta_result == "Fake" else 1 - meta_proba) * 100, 1)
 
 <<<<<<< HEAD
-                            if meta_result == "Fake":
-                                risk += 20 + round(meta_proba * 10)
-=======
-<<<<<<< HEAD
                             # Meta-classifier is the primary ML verdict now
                             if meta_result == "Fake":
                                 risk += 20 + round(meta_proba * 10)  # 20-30 pts, scaled by confidence
@@ -379,18 +331,14 @@ with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
                             if meta_result == "Fake":
                                 risk += 20 + round(meta_proba * 10)
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
                                 reasons.append(f"Hybrid model flagged anomaly ({meta_conf}% confidence)")
                             else:
                                 reasons.append(f"Hybrid model: no anomaly ({meta_conf}% confidence)")
 
 <<<<<<< HEAD
-=======
-<<<<<<< HEAD
                             # Keep individual base-model signals for transparency
 =======
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
                             if rf_result == "Fake":
                                 reasons.append("Random Forest flagged anomaly")
                             if knn_result == "Fake":
@@ -400,12 +348,9 @@ with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
 
                         else:
 <<<<<<< HEAD
-=======
-<<<<<<< HEAD
                             # old-style simple RF+KNN voting (backward compatible)
 =======
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
                             if rf_result == "Fake" and knn_result == "Fake":
                                 risk += 25
                                 reasons.append("RF + KNN both detected anomaly")
@@ -456,13 +401,9 @@ with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
                 print(f"Status: {status}")
                 print(f"Risk Score: {risk}%")
 <<<<<<< HEAD
-                print(f"Fingerprint Similarity: {similarity}%")
-=======
-<<<<<<< HEAD
 =======
                 print(f"Fingerprint Similarity: {similarity}%")
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
                 print(f"AP Count: {ap_count}")
                 print(f"Signal Fluctuation: {signal_var} dBm")
                 print(f"Signal History: {signals}")
@@ -480,10 +421,6 @@ with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
                 else:
                     data_writer.writerow([
 <<<<<<< HEAD
-                        ssid, bssid, avg_signal, channel,
-                        security, ap_count, signal_var, label
-=======
-<<<<<<< HEAD
                         ssid,
                         bssid,
                         avg_signal,
@@ -496,7 +433,6 @@ with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
                         ssid, bssid, avg_signal, channel,
                         security, ap_count, signal_var, label
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
                     ])
                     existing_entries.add(key)
                     print("💾 New network saved")
@@ -505,13 +441,9 @@ with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
 
                 # ================= SAVE CURRENT SCAN =================
 <<<<<<< HEAD
-                create_fingerprint(current_network)
-=======
-<<<<<<< HEAD
 =======
                 create_fingerprint(current_network)
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
                 scan_writer.writerow([
                     ssid,
                     bssid,
@@ -533,13 +465,9 @@ with open(CURRENT_SCAN_FILE, "w", newline="", encoding="utf-8") as scan_f:
                     unstable,
                     xai_json,
 <<<<<<< HEAD
-                    similarity,
-=======
-<<<<<<< HEAD
 =======
                     similarity,
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
                     reason_text
                 ])
 

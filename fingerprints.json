@@ -1,5 +1,6 @@
 [
   {
+<<<<<<< HEAD
     "SSID": "OfficeWiFi",
     "BSSID": "00:11:22:33:44:55",
     "Channel": 2412,
@@ -21,6 +22,8 @@
     "Security": "WPA2"
   },
   {
+=======
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
     "SSID": "ro3",
     "BSSID": "76:F0:FA:35:04:4A:",
     "Channel": 5180000,

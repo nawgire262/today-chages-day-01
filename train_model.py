@@ -37,7 +37,10 @@ Outputs (all saved next to this script):
 
 import os
 import pickle
+<<<<<<< HEAD
 import sys
+=======
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 
 import numpy as np
 import pandas as pd
@@ -48,10 +51,13 @@ from sklearn.model_selection import StratifiedKFold, cross_val_predict
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 
+<<<<<<< HEAD
 # Windows terminals may default to cp1252; retain readable training output.
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
+=======
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 # ================= CONFIG =================
 DATASET_FILE = "wifi_dataset.csv"  # relative path (was hardcoded D:\ before)
 FEATURES = ["RSSI", "Channel", "Security_enc", "AP_Count", "Signal_Var"]
@@ -166,4 +172,8 @@ for filename, obj in artifacts.items():
         pickle.dump(obj, f)
 
 print("\n✅ Hybrid stacked model saved: rf_model.pkl, knn_model.pkl, iso_model.pkl, "
+<<<<<<< HEAD
       "meta_model.pkl, le_security.pkl, le_label.pkl")
+=======
+      "meta_model.pkl, le_security.pkl, le_label.pkl")
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4

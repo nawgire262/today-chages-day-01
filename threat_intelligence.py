@@ -7,7 +7,10 @@ file, all methods return safe local values and the scanner continues normally.
 from __future__ import annotations
 
 import os
+<<<<<<< HEAD
 import json
+=======
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 import threading
 import time
 from datetime import datetime, timezone
@@ -43,6 +46,7 @@ class CloudThreatIntelligence:
         self._last_error: Optional[str] = None
         self._reputation_hits = 0
         self._lock = threading.RLock()
+<<<<<<< HEAD
         self.cache_path = Path(os.getenv("THREAT_INTEL_CACHE", "threat_intelligence_cache.json"))
         self._external_cache = self._load_external_cache()
 
@@ -67,6 +71,8 @@ class CloudThreatIntelligence:
             item = self._external_cache.setdefault(mac, {})
             item[provider] = {"checked_at": datetime.now(timezone.utc).isoformat(), **result}
             self.cache_path.write_text(json.dumps(self._external_cache, indent=2), encoding="utf-8")
+=======
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 
     @staticmethod
     def normalize_bssid(bssid: str) -> str:
@@ -138,10 +144,13 @@ class CloudThreatIntelligence:
                     "threat_type": entry.get("threat_type", "Unknown"),
                     "detection_time": entry.get("detection_time"),
                 }
+<<<<<<< HEAD
             external = self._external_cache.get(mac, {})
             if external:
                 scores = [float(value.get("risk_score", 0)) for value in external.values() if isinstance(value, dict)]
                 return {"hit": bool(max(scores, default=0)), "risk_score": max(scores, default=0), "threat_type": "External provider reputation", "detection_time": None}
+=======
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
         return {"hit": False, "risk_score": 0.0, "threat_type": None, "detection_time": None}
 
     def upload_rogue_ap(self, ssid: str, bssid: str, risk_score: float, threat_type: str, node_id: str = "NODE_OM007") -> bool:
@@ -184,12 +193,15 @@ class CloudThreatIntelligence:
                 "last_error": self._last_error,
                 "sync_interval_seconds": self.sync_interval_seconds,
                 "shared_threat_feed": self.shared_feed(),
+<<<<<<< HEAD
                 "external_provider_adapters": {
                     "VirusTotal": bool(os.getenv("VIRUSTOTAL_API_KEY")),
                     "AbuseIPDB": bool(os.getenv("ABUSEIPDB_API_KEY")),
                     "OpenPhish": bool(os.getenv("OPENPHISH_API_KEY")),
                 },
                 "local_external_cache_entries": len(self._external_cache),
+=======
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
             }
 
 

@@ -216,10 +216,15 @@ class HybridEnsembleDetector:
                 features_dict.get('Signal_Var', 0)
             ]])
             
+<<<<<<< HEAD
             # Only transform with a fitted scaler.  A fresh StandardScaler has
             # no learned statistics and previously caused every prediction/XAI
             # explanation to fail silently.
             if self.scaler is not None and hasattr(self.scaler, "mean_"):
+=======
+            # Scale if scaler available
+            if self.scaler:
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
                 X_scaled = self.scaler.transform(X)
             else:
                 X_scaled = X
@@ -282,6 +287,7 @@ class HybridEnsembleDetector:
                     meta_conf = 50
                     ml_risk_addition = 0
             
+<<<<<<< HEAD
             # Prediction-specific feature contribution.  We combine the RF's
             # learned feature importance with this network's normalized model
             # input; raw channel frequency is never plotted directly.
@@ -303,6 +309,8 @@ class HybridEnsembleDetector:
                 for name, value in zip(feature_names, raw_contributions)
             } if total > 0 else {}
 
+=======
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
             return {
                 'rf_prediction': rf_pred,
                 'knn_prediction': knn_pred,
@@ -310,8 +318,12 @@ class HybridEnsembleDetector:
                 'iso_prediction': iso_result,
                 'meta_prediction': meta_result,
                 'meta_confidence': round(meta_conf, 1),
+<<<<<<< HEAD
                 'ensemble_risk': min(100, ml_risk_addition),
                 'feature_contributions': contributions,
+=======
+                'ensemble_risk': min(100, ml_risk_addition)
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
             }
         
         except Exception as e:

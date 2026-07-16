@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """SentinelShield Streamlit dashboard wired to the live scanner modules."""
 
 import json
@@ -5,13 +6,174 @@ import math
 from pathlib import Path
 
 import altair as alt
+=======
+<<<<<<< HEAD
+﻿import streamlit as st
+from streamlit_autorefresh import st_autorefresh
+
+from styles import load_css
+
+# Import Pages
+from pages.home import show_home
+from pages.live_scan import show_live_scan
+from pages.code_risk_analysis import show_code_risk_analysis
+
+# -----------------------------
+# Page Config
+# -----------------------------
+st.set_page_config(
+    page_title="SentinelShield",
+    page_icon="🛡️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# -----------------------------
+# Load Theme
+# -----------------------------
+load_css()
+
+# -----------------------------
+# Auto Refresh Every 5 Seconds
+# -----------------------------
+st_autorefresh(interval=5000, key="dashboard_refresh")
+
+# -----------------------------
+# Sidebar
+# -----------------------------
+with st.sidebar:
+
+    st.markdown(
+        """
+        <h1 style="color:#00E5FF;text-align:center;">
+            🛡️ SentinelShield
+        </h1>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.write("")
+    st.write("### Navigation")
+
+    page = st.radio(
+        "",
+        [
+            "🏠 Home",
+            "📡 Live Scan",
+            "🛡 Threat Analysis",
+            "🤖 AI Detection",
+            "🧬 Fingerprinting",
+            "🧪 Code Risk Analyzer",
+            "📊 Analytics",
+            "📜 Alert History",
+            "⚙ Settings"
+        ]
+    )
+
+    st.write("---")
+
+    st.success("Background Monitor : Running")
+
+    st.info("Auto Refresh : Every 5 Seconds")
+
+    st.write("---")
+
+    st.caption("SentinelShield v2.0")
+    st.caption("MCA Research Project")
+
+# -----------------------------
+# Header
+# -----------------------------
+col1, col2 = st.columns([5, 1])
+
+with col1:
+
+    st.markdown(
+        """
+        <div class='title'>
+            🛡️ SentinelShield
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
+        <div class='subtitle'>
+        AI Powered WiFi Evil Twin Detection System
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+with col2:
+
+    if st.button("🔄 Scan Now", use_container_width=True):
+        import subprocess
+        import sys
+
+        with st.spinner("Scanning nearby WiFi..."):
+
+            subprocess.run([sys.executable, "main.py"])
+
+        st.success("Scan Completed")
+        st.rerun()
+
+st.write("---")
+
+# -----------------------------
+# Navigation
+# -----------------------------
+if page == "🏠 Home":
+    show_home()
+
+elif page == "📡 Live Scan":
+    show_live_scan()
+
+elif page == "🛡 Threat Analysis":
+
+    st.info("Coming in Phase 2")
+
+elif page == "🤖 AI Detection":
+
+    st.info("Coming in Phase 2")
+
+elif page == "🧬 Fingerprinting":
+
+    st.info("Coming in Phase 2")
+
+elif page == "🧪 Code Risk Analyzer":
+
+    show_code_risk_analysis()
+
+elif page == "📊 Analytics":
+
+    st.info("Coming in Phase 3")
+
+elif page == "📜 Alert History":
+
+    st.info("Coming in Phase 3")
+
+elif page == "⚙ Settings":
+
+    st.info("Coming in Phase 3")
+=======
+"""SentinelShield Streamlit dashboard wired to the live scanner modules."""
+
+import json
+from pathlib import Path
+
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 import pandas as pd
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 
 from background_scanner import get_scanner
 from threat_intelligence import get_threat_intelligence
+<<<<<<< HEAD
 from database_manager import get_alert_history, get_anomaly_analytics, get_daily_statistics, get_monitoring_metrics, get_sensor_statistics, get_threat_history
+=======
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 from xai_explain import FEATURE_LABELS
 
 try:
@@ -21,6 +183,7 @@ except ImportError:
 
 
 st.set_page_config(page_title="SentinelShield", page_icon="🛡️", layout="wide")
+<<<<<<< HEAD
 st_autorefresh(interval=5000, key="live_dashboard")
 
 
@@ -47,16 +210,29 @@ def sensor_statistics():
 def scan_frame(results):
     frame = pd.DataFrame(results.get("networks", []))
     return frame if not frame.empty else load_csv("current_scan.csv")
+=======
+st_autorefresh(interval=5000, key="sentinelshield_refresh")
+
+
+def scan_frame(results):
+    return pd.DataFrame(results.get("networks", []))
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 
 
 def load_csv(path):
     try:
+<<<<<<< HEAD
         return pd.read_csv(path, on_bad_lines="skip") if Path(path).exists() else pd.DataFrame()
     except (OSError, pd.errors.EmptyDataError, pd.errors.ParserError, UnicodeDecodeError):
+=======
+        return pd.read_csv(path) if Path(path).exists() else pd.DataFrame()
+    except (OSError, pd.errors.EmptyDataError, UnicodeDecodeError):
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
         return pd.DataFrame()
 
 
 def show_xai(row):
+<<<<<<< HEAD
     """Render only normalized contributions emitted by the ML prediction."""
     try:
         contributions = json.loads(row.get("XAI_Contributions", "{}"))
@@ -81,6 +257,21 @@ def show_xai(row):
     top = explanation.iloc[0]
     st.caption(f"Top Contributing Feature: {top['Feature']} — {top['Contribution']:.2f}%")
     st.caption(f"Threat Reason: {top['Feature']} is the largest model-derived contribution for this prediction.")
+=======
+    st.caption("Model feature explanation")
+    values = {
+        "RSSI": abs(float(row.get("RSSI", 0))),
+        "Channel": float(row.get("Channel", 0) or 0),
+        "Security_enc": 80 if row.get("Security") == "OPEN" else 15,
+        "AP_Count": 80 if float(row.get("Threat_Score", 0)) >= 50 else 15,
+        "Signal_Var": float(row.get("Signal_Pattern_Score", 0)),
+    }
+    explanation = pd.DataFrame({
+        "Feature": [FEATURE_LABELS[key] for key in values],
+        "Value": list(values.values()),
+    }).set_index("Feature")
+    st.bar_chart(explanation)
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 
 
 def show_network_table(df, columns=None):
@@ -91,6 +282,7 @@ def show_network_table(df, columns=None):
         st.dataframe(df[available], use_container_width=True, hide_index=True)
 
 
+<<<<<<< HEAD
 def alert_frame():
     alerts = load_csv("alert_history.csv")
     if not alerts.empty and "Risk" in alerts:
@@ -98,6 +290,8 @@ def alert_frame():
     return alerts
 
 
+=======
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 scanner = get_scanner()
 results = scanner.get_results()
 networks = scan_frame(results)
@@ -106,7 +300,11 @@ status = scanner.get_status()
 st.sidebar.title("🛡️ SentinelShield")
 page = st.sidebar.radio("Navigation", [
     "Home", "Live Scan", "Threat Analysis", "AI Detection", "Fingerprinting",
+<<<<<<< HEAD
     "Analytics", "Anomaly Analysis", "Historical Analysis", "Alert History", "Cloud Intelligence", "Settings",
+=======
+    "Analytics", "Alert History", "Cloud Intelligence", "Settings",
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 ])
 st.sidebar.caption(f"Scanner: {status['status'].title()} | {status['progress']}%")
 
@@ -114,6 +312,7 @@ st.title("🛡️ SentinelShield")
 st.caption("AI Powered WiFi Evil Twin Detection System")
 st.divider()
 
+<<<<<<< HEAD
 metrics = monitoring_metrics()
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Networks Found", metrics["networks_found"])
@@ -122,10 +321,13 @@ col3.metric("Critical Alerts", metrics["critical_alerts"])
 col4.metric("Last Scan", metrics["last_scan"] or "Not run")
 st.divider()
 
+=======
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 if page == "Home":
     st.header("Dashboard Overview")
     threats = networks[networks["Threat_Level"].isin(["HIGH", "CRITICAL"])] if "Threat_Level" in networks else pd.DataFrame()
     highest_risk = float(networks["Combined_Risk"].max()) if "Combined_Risk" in networks and not networks.empty else 0.0
+<<<<<<< HEAD
     alerts = alert_frame()
     critical_alerts = len(alerts[alerts["Risk"] >= 75]) if "Risk" in alerts else 0
     anomaly_stats = anomaly_analytics()
@@ -152,6 +354,13 @@ if page == "Home":
         timeline = alerts.assign(Time=pd.to_datetime(alerts["Time"], errors="coerce")).dropna(subset=["Time"]).set_index("Time")
         if not timeline.empty:
             st.line_chart(timeline["Risk"])
+=======
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Networks Scanned", len(networks))
+    c2.metric("High/Critical Threats", len(threats))
+    c3.metric("Highest Risk", f"{highest_risk:.1f}%")
+    c4.metric("Scan Status", status["status"].title())
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
     show_network_table(networks, ["SSID", "BSSID", "RSSI", "Security", "Combined_Risk", "Threat_Level", "Cloud_Reputation_Hit"])
 
 elif page == "Live Scan":
@@ -163,8 +372,11 @@ elif page == "Live Scan":
     st.write(f"Status: **{status['status'].title()}** | Networks found: **{status['networks_found']}**")
     if status["error"]:
         st.error(status["error"])
+<<<<<<< HEAD
     if results.get("scan_mode") == "demo" or status.get("scan_mode") == "demo":
         st.warning("Running in demo mode. Install pywifi/comtypes and connect a supported Wi-Fi adapter for live results.")
+=======
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
     show_network_table(networks)
     if results.get("scan_log"):
         with st.expander("Scanner activity"):
@@ -187,6 +399,7 @@ elif page == "Threat Analysis":
 
 elif page == "AI Detection":
     st.header("🤖 AI Detection")
+<<<<<<< HEAD
     show_network_table(networks, ["SSID", "BSSID", "RF_Prediction", "KNN_Prediction", "Isolation_Forest", "Anomaly_Score", "Anomaly_Confidence", "ML_Risk", "Signal_Pattern_Score", "Combined_Risk"])
     if not networks.empty:
         left, right = st.columns(2)
@@ -227,6 +440,10 @@ elif page == "AI Detection":
                 st.bar_chart(networks.set_index("SSID")[["Threat_Score", "Combined_Risk"]])
             else:
                 st.warning("At least two networks are required for threat-score comparison.")
+=======
+    show_network_table(networks, ["SSID", "BSSID", "RF_Prediction", "KNN_Prediction", "ML_Risk", "Signal_Pattern_Score", "Combined_Risk"])
+    if not networks.empty:
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
         selected = st.selectbox("Explain network", networks.index, format_func=lambda i: f"{networks.loc[i, 'SSID']} ({networks.loc[i, 'BSSID']})")
         show_xai(networks.loc[selected])
 
@@ -249,6 +466,7 @@ elif page == "Fingerprinting":
 elif page == "Analytics":
     st.header("📊 Analytics")
     if not networks.empty:
+<<<<<<< HEAD
         st.download_button("Export current scan (CSV)", networks.to_csv(index=False).encode("utf-8"), "sentinelshield_current_scan.csv", "text/csv")
         sensors = sensor_statistics()
         st.subheader("Physical sensor status")
@@ -257,6 +475,8 @@ elif page == "Analytics":
         if {"SSID", "Sensor_Count", "Sensor_Agreement_dBm"}.issubset(networks.columns):
             st.subheader("Multi-sensor fusion")
             show_network_table(networks, ["SSID", "BSSID", "Sensor_Count", "Sensor_Agreement_dBm", "Combined_Risk"])
+=======
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
         if "Threat_Level" in networks:
             st.subheader("Threat distribution")
             st.bar_chart(networks["Threat_Level"].value_counts())
@@ -269,6 +489,7 @@ elif page == "Analytics":
     else:
         st.info("Run a scan to populate analytics.")
 
+<<<<<<< HEAD
 elif page == "Anomaly Analysis":
     st.header("Anomaly Analysis")
     stats = anomaly_analytics()
@@ -347,6 +568,13 @@ elif page == "Alert History":
         st.download_button("Download alert history (CSV)", alerts.to_csv(index=False).encode("utf-8"), "alert_history.csv", "text/csv")
         st.subheader("Alert analytics")
         st.bar_chart(alerts["Risk"])
+=======
+elif page == "Alert History":
+    st.header("📜 Alert History")
+    alerts = load_csv("alert_history.csv")
+    st.metric("Recorded Alerts", len(alerts))
+    show_network_table(alerts)
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
 
 elif page == "Cloud Intelligence":
     st.header("☁️ Cloud Threat Intelligence")
@@ -362,6 +590,7 @@ elif page == "Cloud Intelligence":
         st.success("Firebase Firestore connected")
     else:
         st.warning("Offline mode. Local scanning remains active.")
+<<<<<<< HEAD
     st.caption(f"Local external-cache entries: {cloud.get('local_external_cache_entries', 0)}")
     st.json(cloud.get("external_provider_adapters", {}), expanded=False)
     local_cloud = results.get("local_cloud_intelligence", {})
@@ -377,6 +606,8 @@ elif page == "Cloud Intelligence":
             st.bar_chart(networks.set_index("SSID")[["Cloud_Risk"]])
     st.subheader("Top suspicious BSSIDs")
     show_network_table(pd.DataFrame(local_cloud.get("top_suspicious_bssids", [])))
+=======
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4
     show_network_table(pd.DataFrame(cloud["shared_threat_feed"]))
 
 elif page == "Settings":
@@ -392,6 +623,7 @@ elif page == "Settings":
         st.subheader("Reports")
         if st.button("Generate PDF report"):
             try:
+<<<<<<< HEAD
                 report_path = ReportGenerator().generate_pdf_report(networks)
                 st.session_state["report_path"] = report_path
                 st.session_state["report_bytes"] = Path(report_path).read_bytes()
@@ -405,3 +637,10 @@ elif page == "Settings":
                 file_name=st.session_state.get("report_path", "Threat_Report.pdf"),
                 mime="application/pdf",
             )
+=======
+                report_path = ReportGenerator().generate_pdf_report()
+                st.success(f"Created {report_path}")
+            except Exception as exc:
+                st.error(str(exc))
+>>>>>>> 0d1f8da (Updated SentinelShield project)
+>>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4

@@ -1,8 +1,4 @@
 <<<<<<< HEAD
-SSID,BSSID,RSSI,Channel,Security,AP_Count,Signal_Var,Threat_Score,Combined_Risk,Threat_Level
-ro3,76:f0:fa:35:04:4a:,-31.0,5180000,WPA2,1,4.0,33.0,13.8,SAFE
-=======
-<<<<<<< HEAD
 SSID,BSSID,Signal,Channel,Security,Status,Risk_Score,AP_Count,Signal_Fluctuation,Signal_History,Random_Forest,KNN,Isolation_Forest,Meta_Model,Meta_Confidence,Est_Distance_m,RAIM_Flagged,Temporally_Unstable,XAI_JSON,Reason
 FTTH,4c:ae:1c:4b:7a:83:,-62,2412000,WPA2,✅ Safe,5,1,8,"[-64, -64, -66, -66, -58, -58, -58, -58, -62, -62]",N/A,N/A,N/A,N/A,N/A,5.41,False,False,"{""rules"": [], ""meta"": [], ""rf_features"": [[""RSSI Signal Spike / Attenuation"", -62.0], [""Channel Congestion Overlap"", 25.0], [""Unencrypted Open Portal Flag"", -20.0], [""Multi-AP MAC Spoofing Density"", 0], [""Temporal Signal Fluctuation Variance"", 32]]}","ML error: The feature names should match those that were passed during fit.
 Feature names unseen at fit time:
@@ -26,4 +22,3 @@ Feature names seen at fit time, yet now missing:
 SSID,BSSID,RSSI,Channel,Security,Threat_Score,Signal_Pattern_Score,ML_Risk,Combined_Risk,Cloud_Reputation_Hit,Cloud_Risk_Score,Cloud_Threat_Type,Fingerprint_Similarity,RF_Prediction,KNN_Prediction,Threat_Vectors,Signal_History,Threat_Level,Threshold_Mode
 ro3,76:f0:fa:35:04:4a:,-36.5,5180000,WPA2,33.0,0.0,50.0,28.2,False,0.0,,100,Normal,Normal,"{""Scan Consistency"": 91.0, ""Open Network"": 15.0, ""RSSI Proximity"": 100.0, ""Multi-BSSID"": 10.0, ""Channel Flux"": 5.0, ""Cloud Reputation"": 0.0}","[-37.0, -37.0, -40.0, -40.0, -38.0, -38.0, -31.0, -31.0]",SAFE,warming_up
 >>>>>>> 0d1f8da (Updated SentinelShield project)
->>>>>>> fb2e0dfb94cb96bb998dfa037a56d2b2405958b4

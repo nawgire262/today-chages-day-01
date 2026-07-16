@@ -2,7 +2,10 @@ from notification_manager import NotificationManager
 from alert_logger import AlertLogger
 from fingerprinting.fingerprint_generator import create_fingerprint
 from fingerprinting.fingerprint_matcher import compare_fingerprint
-import pywifi
+try:
+    import pywifi
+except ImportError as exc:
+    raise SystemExit("PyWiFi is required for main.py. Install project dependencies before scanning.") from exc
 import time
 import pandas as pd
 import csv
@@ -47,7 +50,10 @@ DATASET_FILE = "wifi_dataset.csv"
 CURRENT_SCAN_FILE = "current_scan.csv"
 
 wifi = pywifi.PyWiFi()
-iface = wifi.interfaces()[0]
+interfaces = wifi.interfaces()
+if not interfaces:
+    raise SystemExit("No supported Wi-Fi interface was found. Use the Streamlit dashboard demo mode or connect a supported adapter.")
+iface = interfaces[0]
 notifier = NotificationManager()
 logger = AlertLogger()
 

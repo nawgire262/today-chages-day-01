@@ -19,6 +19,8 @@ import urllib.request
 from datetime import datetime
 from email.message import EmailMessage
 
+from runtime_config import load_runtime_config
+
 try:
     from plyer import notification
 except ImportError:  # Keeps scanning functional if desktop notifications are absent.
@@ -32,7 +34,8 @@ class NotificationManager:
     def __init__(self):
         self.last_alert = None
         self._last_by_key: dict[str, float] = {}
-        self.cooldown_seconds = max(0, int(os.getenv("SENTINELSHIELD_ALERT_COOLDOWN_SECONDS", "120")))
+        configured_cooldown = load_runtime_config()["notifications"]["cooldown_seconds"]
+        self.cooldown_seconds = max(0, int(os.getenv("SENTINELSHIELD_ALERT_COOLDOWN_SECONDS", configured_cooldown)))
 
     def notify(self, title, message, timeout=10) -> bool:
         """Send a Windows desktop notification without allowing failures to stop scans."""

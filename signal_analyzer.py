@@ -15,17 +15,35 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 
+def _valid_rssi_array(values):
+    """Return finite, physically plausible RSSI samples from untrusted input."""
+    try:
+        array = np.asarray(list(values), dtype=float)
+    except (TypeError, ValueError):
+        return np.asarray([], dtype=float)
+    return array[np.isfinite(array) & (array >= -127.0) & (array <= 0.0)]
+
+
 class AdvancedSignalAnalyzer:
     """Signal behavior analysis engine"""
     
     def __init__(self, window_size=30):
-        self.window_size = window_size  # seconds
+        self.window_size = max(1, int(window_size))  # seconds
         self.signal_buffer = defaultdict(list)  # BSSID -> [(timestamp, rssi), ...]
         
     def add_signal_reading(self, bssid, rssi, timestamp=None):
         """Add RSSI reading with timestamp"""
+        bssid = str(bssid or "").strip().upper()
+        try:
+            rssi = float(rssi)
+        except (TypeError, ValueError):
+            return False
+        if not bssid or len(bssid) > 64 or not np.isfinite(rssi) or not -127.0 <= rssi <= 0.0:
+            return False
         if timestamp is None:
             timestamp = datetime.now()
+        if not isinstance(timestamp, datetime):
+            return False
         
         self.signal_buffer[bssid].append((timestamp, rssi))
         
@@ -35,6 +53,7 @@ class AdvancedSignalAnalyzer:
             (ts, rssi) for ts, rssi in self.signal_buffer[bssid]
             if ts > cutoff
         ]
+        return True
     
     def analyze_rssi_pattern(self, rssi_sequence):
         """
@@ -43,13 +62,12 @@ class AdvancedSignalAnalyzer:
         Legitimate patterns: gradual changes, consistent behavior
         Rogue patterns: random jumps, oscillations, phase shifts
         """
-        if len(rssi_sequence) < 3:
+        rssi_array = _valid_rssi_array(rssi_sequence)
+        if len(rssi_array) < 3:
             return {
                 'pattern_anomaly_score': 0,
                 'reason': 'insufficient_data'
             }
-        
-        rssi_array = np.array(rssi_sequence)
         
         # 1. Variance analysis
         variance = np.var(rssi_array)
@@ -114,10 +132,9 @@ class AdvancedSignalAnalyzer:
         
         Returns indicator of whether AP is stationary or mobile.
         """
-        if len(rssi_sequence) < 5:
+        rssi_array = _valid_rssi_array(rssi_sequence)
+        if len(rssi_array) < 5:
             return {'mobility_score': 50, 'classification': 'unknown'}
-        
-        rssi_array = np.array(rssi_sequence)
         
         # Calculate metrics
         variance = np.var(rssi_array)
@@ -154,10 +171,9 @@ class AdvancedSignalAnalyzer:
         - Rapid changes in specific directions
         - Less omni-directional pattern
         """
-        if len(signal_strengths) < 5:
+        signals = _valid_rssi_array(signal_strengths)
+        if len(signals) < 5:
             return {'beamforming_likelihood': 0, 'reason': 'insufficient_data'}
-        
-        signals = np.array(signal_strengths)
         
         # Calculate kurtosis (beamforming = higher kurtosis, sharper peaks)
         kurt = _calculate_kurtosis(signals)
@@ -217,10 +233,9 @@ class AdvancedSignalAnalyzer:
         Legitimate APs: smooth, gradual RSSI changes
         Rogue APs: jumpy, erratic changes
         """
-        if len(rssi_sequence) < window:
+        rssi_array = _valid_rssi_array(rssi_sequence)
+        if len(rssi_array) < max(3, int(window)):
             return {'coherence_score': 50}
-        
-        rssi_array = np.array(rssi_sequence)
         
         # Calculate smoothness using second derivative
         first_deriv = np.diff(rssi_array)

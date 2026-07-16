@@ -55,33 +55,29 @@ import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from runtime_config import load_runtime_config
+
 DEFAULT_STATE_PATH = Path("adaptive_threshold_state.json")
 
 # Original hard-coded thresholds - used as a safe fallback during warm-up
 # and if the persisted state ever becomes unreadable/corrupted.
 FALLBACK_THRESHOLDS = {"critical": 75.0, "high": 50.0, "medium": 30.0}
 
-WARMUP_SAMPLES = 15      # scans needed before the engine starts adapting
-EWMA_ALPHA = 0.12        # smoothing factor for the running mean/variance
-                         # (smaller = slower/steadier adaptation)
-MIN_STD = 4.0            # floor on the learned std-dev so thresholds
-                         # never collapse on top of each other in an
-                         # extremely stable environment
+_CONFIG = load_runtime_config()["adaptive_thresholds"]
+WARMUP_SAMPLES = max(1, int(_CONFIG["warmup_samples"]))
+EWMA_ALPHA = min(1.0, max(0.001, float(_CONFIG["ewma_alpha"])))  # smaller = steadier adaptation
+MIN_STD = max(0.1, float(_CONFIG["min_std"]))  # prevents collapsed thresholds
 
 # Standard-deviation multipliers used to derive each cut point from the
 # learned baseline. Roughly tuned so that, on a "typical" environment,
 # the adaptive cut points land close to the original 75/50/30 values.
-K_CRITICAL = 2.0
-K_HIGH = 1.15
-K_MEDIUM = 0.35
+K_CRITICAL = float(_CONFIG["multipliers"]["critical"])
+K_HIGH = float(_CONFIG["multipliers"]["high"])
+K_MEDIUM = float(_CONFIG["multipliers"]["medium"])
 
 # Absolute safety rails: no matter how the baseline drifts, cut points
 # are always clamped inside these ranges.
-BAND = {
-    "critical": (55.0, 95.0),
-    "high": (35.0, 80.0),
-    "medium": (15.0, 60.0),
-}
+BAND = {name: tuple(sorted(map(float, values))) for name, values in _CONFIG["bands"].items()}
 
 
 @dataclass

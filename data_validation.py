@@ -10,7 +10,7 @@ TRAINING_COLUMNS = ["SSID", "BSSID", "RSSI", "Channel", "Security", "AP_Count", 
 
 def _read(path):
     try:
-        return pd.read_csv(path, on_bad_lines="skip") if Path(path).exists() else pd.DataFrame()
+        return pd.read_csv(path, on_bad_lines="skip", engine="python") if Path(path).exists() else pd.DataFrame()
     except (OSError, UnicodeDecodeError, pd.errors.ParserError, pd.errors.EmptyDataError):
         return pd.DataFrame()
 

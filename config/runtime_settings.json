@@ -1,0 +1,14 @@
+{
+  "adaptive_thresholds": {
+    "warmup_samples": 15,
+    "ewma_alpha": 0.12,
+    "min_std": 4.0,
+    "multipliers": {"critical": 2.0, "high": 1.15, "medium": 0.35},
+    "bands": {
+      "critical": [55.0, 95.0],
+      "high": [35.0, 80.0],
+      "medium": [15.0, 60.0]
+    }
+  },
+  "notifications": {"cooldown_seconds": 120}
+}
